@@ -72,9 +72,12 @@ function Lobby() {
 }
 
 const Home=()=>{
-  <Suspense>
-    <Lobby/>
-  </Suspense>
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Lobby />
+    </Suspense>
+  );
+  
 }
 
 export default Home;
