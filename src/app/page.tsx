@@ -73,7 +73,7 @@ function Lobby() {
 
 const Home=()=>{
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<><Lobby/></>}>
       <Lobby />
     </Suspense>
   );
