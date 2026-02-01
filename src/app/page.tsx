@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Lobby from "./Lobby";
+import Lobby from "./lobby";
 
 export default function Home(){
   return (
