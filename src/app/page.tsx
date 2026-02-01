@@ -71,13 +71,12 @@ function Lobby() {
   );
 }
 
-const Home=()=>{
+export default function Home(){
   return (
-    <Suspense fallback={<><Lobby/></>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <Lobby />
     </Suspense>
   );
   
 }
 
-export default Home;
