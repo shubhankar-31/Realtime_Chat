@@ -88,7 +88,7 @@ const messages = new Elysia({ prefix: "/messages" }).use(authMiddleware).post("/
 
 
 
-const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages)
+export const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages)
 
 
 export const GET = app.fetch
