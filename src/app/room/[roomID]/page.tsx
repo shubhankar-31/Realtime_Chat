@@ -4,7 +4,7 @@ import { useUsername } from "@/hooks/use-username";
 import { client } from "@/lib/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation"
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import {format} from "date-fns"
 import { useRealtime } from "@/lib/realtime-client";
 
@@ -28,6 +28,7 @@ const [copyStatus, setCopyStatus] = useState<string>("Copy")
 const [timeRemaining,settimeRemaining]=useState<number | null> (null);
 const [input, setInput] = useState<string>("");
 const inputRef=useRef<HTMLInputElement>(null);
+const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 const router=useRouter();
 const {username}=useUsername();
@@ -94,6 +95,14 @@ const realtimeOptions = useMemo<Parameters<typeof useRealtime>[0]>(() => ({
 
 useRealtime(realtimeOptions);
 
+useEffect(() => {
+  return () => {
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+    }
+  };
+}, []);
+
 
 
 
@@ -110,13 +119,16 @@ const {mutate:destroy}=useMutation({
     await client.room.delete(null,{query:{roomID}})
   }
 })
-const copyLink=()=>{
+const copyLink = useCallback(() => {
   const url = window.location.href;
-  navigator.clipboard.writeText(url);
+  void navigator.clipboard.writeText(url);
   setCopyStatus("Copied!!");
 
-  setTimeout(()=>setCopyStatus("Copy"),2000);
-}
+  if (copyTimeoutRef.current) {
+    clearTimeout(copyTimeoutRef.current);
+  }
+  copyTimeoutRef.current = setTimeout(() => setCopyStatus("Copy"), 2000);
+}, []);
 
   return (
     <main className="flex flex-col h-screen max-h-screen overflow-hidden">
@@ -126,7 +138,7 @@ const copyLink=()=>{
               <span className="text-xs text-zinc-500 uppercase">Room ID: </span>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-green-500">{roomID}</span>
-                <button onClick={()=>copyLink()} className="text-[11px] bg-zinc-800 hover:bg-zinc-600 py-1 px-2 rounded text-zinc-400 hover:text-zinc-200 transition-colors">{copyStatus}</button>
+                <button onClick={copyLink} className="text-[11px] bg-zinc-800 hover:bg-zinc-600 py-1 px-2 rounded text-zinc-400 hover:text-zinc-200 transition-colors">{copyStatus}</button>
               </div>
             </div>
 
