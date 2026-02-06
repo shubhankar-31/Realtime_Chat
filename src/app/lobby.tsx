@@ -4,6 +4,7 @@ import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 
 
@@ -14,17 +15,24 @@ function Lobby() {
   const searchParams=useSearchParams();
   const wasDestroyed=searchParams.get("destroyed")==="true"
   const error=searchParams.get("error");
+  const [didAttemptCreate, setDidAttemptCreate] = useState(false);
 
-  const {mutate:createRoom}=useMutation({
+  const {mutate:createRoom,isPending}=useMutation({
     
     mutationFn:async ()=>{
       const res=await client.room.create.post();
       
-      if(res.status==200){
-        router.push(`/room/${res.data?.roomID}`)
+      if(res.status!==200){
+        throw new Error("create-room-failed");
       }
 
-
+      router.push(`/room/${res.data?.roomID}`)
+    },
+    onError: ()=>{
+      setDidAttemptCreate(false);
+    },
+    onSuccess: ()=>{
+      setDidAttemptCreate(true);
     },
   
   })
@@ -60,7 +68,15 @@ function Lobby() {
                 </div>
               </div>
             </div>
-            <button onClick={()=>createRoom()} className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50"> 
+            <button
+              disabled={isPending || didAttemptCreate}
+              onClick={()=>{
+                if(didAttemptCreate || isPending) return;
+                setDidAttemptCreate(true);
+                createRoom();
+              }}
+              className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50"
+            > 
               CREATE SECURE ROOM
               </button>
           </div>
