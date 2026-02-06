@@ -4,9 +4,9 @@ import { useUsername } from "@/hooks/use-username";
 import { client } from "@/lib/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation"
-import { useRef, useState,useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import {format} from "date-fns"
-import { useRealtime } from "@upstash/realtime/client";
+import { useRealtime } from "@/lib/realtime-client";
 
 
 
@@ -79,18 +79,20 @@ const {data:messages,refetch}=useQuery({
   }
 })
 
-useRealtime({
-  channels:[roomID],
-  events:["chat.message","chat.destroy"],
-  onData:({event})=>{
-    if(event==="chat.message"){
+const realtimeOptions = useMemo<Parameters<typeof useRealtime>[0]>(() => ({
+  channels: [roomID],
+  events: ["chat.message", "chat.destroy"] as const,
+  onData: ({ event }) => {
+    if (event === "chat.message") {
       refetch();
     }
-    if(event==="chat.destroy"){
+    if (event === "chat.destroy") {
       router.push("/?destroyed=true")
     }
   }
-})
+}), [roomID, refetch, router]);
+
+useRealtime(realtimeOptions);
 
 
 
