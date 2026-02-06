@@ -15,6 +15,13 @@ export const proxy = async (req: NextRequest) => {
     if (!room)
         return NextResponse.redirect(new URL("/?error=room-not-found", req.url));
 
+    const userAgent = req.headers.get("user-agent") ?? "";
+    const isBot = /whatsapp|facebookexternalhit|facebot|twitterbot|telegrambot|slackbot|discordbot|linkedinbot|pinterest|embedly|quora link preview|googlebot|bingbot|yandex|duckduckbot/i.test(
+        userAgent
+    );
+    if (isBot)
+        return NextResponse.next();
+
     const existingToken = req.cookies.get("X-Auth-Token")?.value;
     if (existingToken && room.connected.includes(existingToken))
         return NextResponse.next();
